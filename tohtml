@@ -1,0 +1,22 @@
+#!/bin/bash
+
+echo "<ul>"
+IFS=$'\t'
+# Turn JSON to TSV (title, url, ID), one line for each entry. Therefore, remove tabs from input.
+# Remove '\n' to prevent error while parsing malformed JSON: https://stackoverflow.com/a/62109900
+tr -d '\t\n'|jq -r ".hits[]|{title,url,objectID}|@text \"\(.title)\t\(.url)\t\(.objectID)\t\""|while read -r TITLE URL ID; do
+	COMMENTURL="https://news.ycombinator.com/item?id=$ID"
+	# For non-link posts (example: Tell HN, Ask HN, etc.)
+	[ "$URL" = "null" ] && URL="$COMMENTURL"
+
+	echo "\
+<li>\
+	<div>\
+		<a href=\"$URL\">$TITLE</a>\
+		<br>\
+		<a href=\"$COMMENTURL\">(Comments)</a>\
+		<br>\
+	</div>\
+</li>"
+done
+echo "</ul>"
